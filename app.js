@@ -1,21 +1,41 @@
-const { setEngine } = require('crypto')
 const express = require('express')
+const bodyParser = require('body-parser')
+const sequelize = require('./utils/database');
+const User = require('./models/user');
+const userRoutes = require('./routes/user');
+const session = require('express-session');
+const cookieParser = require('cookie-parser')
+const flash = require('connect-flash');
+const path = require('path')
 const app = express()
 
+app.use(bodyParser.urlencoded({ extended: false }))
+app.use(bodyParser.json())
+app.use(cookieParser('SecretStringForCookies'))
+
+app.use(session({
+    secret:'flashblog',
+    saveUninitialized: true,
+    resave: true,
+    cookie: {
+        maxAge: 600000
+    }
+}));
+  
+app.use(flash());
+
+// app.use(function(req, res, next){
+//     res.locals.message = req.flash();
+//     next();
+// });
+
+app.set('views', path.join(__dirname, "views"));
+app.set('view engine', 'ejs');
 
 
-app.get('/login', (req,res,next) => {
-    res.sendFile('/Users/anusha/Desktop/Sharpener/expense_tracker_express/views/login.html')
-})
-
-app.get('/register', (req,res,next) => {
-    res.sendFile('/Users/anusha/Desktop/Sharpener/expense_tracker_express/views/register.html')
-})
+app.use(userRoutes);
 
 
-// app.get('/login', (req,res,next) => {
-//     res.send('HELLO! WELCOME')
-// })
-
-
-app.listen(3000)
+sequelize.sync().then(result => {
+    app.listen(3000);
+});

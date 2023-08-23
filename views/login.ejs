@@ -12,7 +12,9 @@
 <div class="parent">
 <div class="custom">
     <h3 style="text-align: center; margin-top: 10px;">Login</h3>
- 
+    <div class="flash-success">
+        <%= msg %> 
+    </div>
    <div class="container-fluid">
     <form action="/login" method="POST">
         <div class="mb-3">
@@ -67,5 +69,9 @@
         margin: auto; 
     }
 
+    .flash-success{
+        background-color: aquamarine;
+        text-align: center;
+    }
 
 </style>

@@ -12,9 +12,12 @@
 <div class="parent">
 <div class="custom">
     <h3 style="text-align: center; margin-top: 10px;">Register</h3>
- 
+
+    <div class="flash-warning">
+    <%= msg %> 
+    </div>
    <div class="container-fluid">
-    <form action="/login" method="POST">
+    <form action="/register" method="POST">
         <div class="mb-3">
             <label for="fullname" class="form-label" >Full Name</label>
             <input type="text" name="fullname" class="form-control" required>
@@ -35,15 +38,13 @@
             <label for="password" class="form-label">Password</label>
             <input type="password" name="password" class="form-control" required>
         </div>  
-        <div class="mb-3">  
-            <label for="confirmpassword" class="form-label">Confirm Password</label>
-            <input type="password" name="confirmpassword" class="form-control" required>
-        </div>  
+        
         <div class="btn-parent" style="text-align: center"> 
             <button type="submit" class="btn btn-primary" style="margin-bottom: 5px; text-align: center; ">Register</button>
             
         
-        </div>     
+        </div>  
+          
        
     </form>
     </div>
@@ -75,6 +76,12 @@
         /* align-items: center;
         align-content: center; */
         margin: auto; 
+    }
+
+    .flash-warning{
+        background-color: red;
+        text-align: center;
+
     }
 
 
