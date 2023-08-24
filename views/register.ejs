@@ -10,8 +10,10 @@
 <body>
 
 <div class="parent">
+    <h2 style="text-align: center;">Expense Tracker App 📒</h2>
+   
 <div class="custom">
-    <h3 style="text-align: center; margin-top: 10px;">Register</h3>
+    <h4 style="text-align: center; margin-top: 10px;">Register</h4>
 
     <div class="flash-warning">
     <%= msg %> 
@@ -41,7 +43,7 @@
         
         <div class="btn-parent" style="text-align: center"> 
             <button type="submit" class="btn btn-primary" style="margin-bottom: 5px; text-align: center; ">Register</button>
-            
+            <p>Existing User? <a href="login">Login</a></p>
         
         </div>  
           
@@ -62,20 +64,28 @@
 <style>
  
     .custom{
-        margin-top: 20px;
+     
         margin: auto;
         width: 400px;
+      
         align-items: center;
         border: 1px;
         border-color: grey;
         border-style:solid;
         border-radius: 20px;
+        /* position: absolute; */
+  top: 50%;
+  /* -ms-transform: translateY(-50%);
+  transform: translateY(-50%); */
+
     }
 
     .parent{
         /* align-items: center;
         align-content: center; */
         margin: auto; 
+        width: 50%;
+        padding: 50px;
     }
 
     .flash-warning{
