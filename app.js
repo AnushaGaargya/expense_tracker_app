@@ -2,12 +2,14 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const sequelize = require('./utils/database');
 const User = require('./models/user');
+const Expense = require('./models/expense')
 const userRoutes = require('./routes/user');
 const session = require('express-session');
 const cookieParser = require('cookie-parser')
 const flash = require('connect-flash');
 const path = require('path')
 const app = express()
+
 
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
@@ -36,6 +38,11 @@ app.set('view engine', 'ejs');
 app.use(userRoutes);
 
 
+User.hasMany(Expense)
+Expense.belongsTo(User, {
+    constraints: true,
+    onDelete: 'CASCADE'
+})
 sequelize.sync().then(result => {
     app.listen(3000);
 });

@@ -1,4 +1,6 @@
+const { where } = require('sequelize');
 const User = require('../models/user');
+const bcrypt = require('bcrypt')
 
 exports.getUserRegister = (req,res,next) => {
 // 
@@ -12,52 +14,46 @@ exports.postUserRegister = async (req,res,next) => {
     const username = req.body.username;
     const email = req.body.email;
     const password = req.body.password
-
+    
     const existing_emails = await User.findAll({
-        attributes: ['username','email']
+        attributes: ['email'],
+        where: {email: email}    
     });
-    
-    let email_flag = false;
-    let username_flag = false;
-    for (var i = 0; i < existing_emails.length; i++) {
-        // console.log(`email present in db ${existing_emails[i]['dataValues']['email']}`)
-        console.log(`NEW** email present in db ${existing_emails[i].email}`)
-        if (email === existing_emails[i].email){
-            email_flag = true
-            break
-       }
-       if (username === existing_emails[i].username){
-            username_flag = true
-       }
-    }
-    
-    if(email_flag===false && username_flag===false){
-        console.log('new user')
+    const existing_usernames = await User.findAll({
+        attributes: ['username'],
+        where: {username: username}
+    })
+    console.log(existing_emails)
 
+if (existing_emails.length > 0){
+    console.log(existing_emails[0]['email'])
+    console.log('email is already registered.')
+    req.flash('error', 'This email is already registered. Click on "Login" to continue');
+    res.redirect('/register')
+}
+else if(existing_usernames.length > 0){
+    console.log(existing_usernames[0]['username'])
+    console.log('username not available. try a different name')
+    req.flash('error', 'This username is not available. Try a different name');
+    res.redirect('/register')
+}
+
+else {
+    console.log('new user')
+    const hash = await bcrypt.hash(password,10)
         User.create({
             fullname: fullname,
             phone: phone,
             username: username,
             email: email,
-            password: password
+            password: hash
         }).then(result => {
             req.flash('success', 'Registration Successful. Please Login to continue.');
             res.redirect('/login')
         }).catch(err => {console.log(err)})
     }
-    else if(email_flag===true){
-        console.log('email is already registered.')
-        req.flash('error', 'This email is already registered. Click on "Login" to continue');
-        res.redirect('/register')
-    }
-    else if(username_flag===true){
-        console.log('username not available. try a different name')
-        req.flash('error', 'This username is not available. Try a different name');
-        res.redirect('/register')
-
-    }
-    } 
-
+}
+ 
 exports.getUserLogin = (req,res,next) => {
     const msg = req.flash('success')
     const fail = req.flash('error')
@@ -67,6 +63,9 @@ exports.getUserLogin = (req,res,next) => {
     }
     else if(fail.length > 0){
     res.render('login', {message: fail})
+    }
+    else{
+        res.render('login', {message: []})
     }
     
 }
@@ -78,10 +77,12 @@ exports.postUserLogin = async (req,res,next) => {
     let user_exists_flag = false
     const existing_users = await User.findAll({
     attributes: ['username', 'email', 'password']});
+
     for (var i=0; i<existing_users.length; i++){
         if(email===existing_users[i].email){
             user_exists_flag = true
-            if(password===existing_users[i].password){
+            const isMatch = await bcrypt.compare(password, existing_users[i].password )
+            if(isMatch===true){
                 // res.send('welcome home')
                 console.log("perfect, taking you home")
                 res.redirect('/home')
@@ -93,12 +94,13 @@ exports.postUserLogin = async (req,res,next) => {
             }
             break
         }
+    }
     if (user_exists_flag === false){
         req.flash('error', 'This email is not registered. Please click on "register" down below.')
       
         res.redirect('login')
     }
-    }
+    
 }
 
 exports.getHome = (req,res,next) => {
