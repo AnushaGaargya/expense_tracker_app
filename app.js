@@ -7,7 +7,8 @@ const userRoutes = require('./routes/user');
 const session = require('express-session');
 const cookieParser = require('cookie-parser')
 const flash = require('connect-flash');
-const path = require('path')
+const path = require('path');
+const { LocalStorage } = require('node-localstorage');
 const app = express()
 
 
@@ -36,6 +37,8 @@ app.set('view engine', 'ejs');
 
 
 app.use(userRoutes);
+
+
 
 
 User.hasMany(Expense)

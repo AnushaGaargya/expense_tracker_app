@@ -16,8 +16,8 @@ const Expense = sequelize.define('expense',  {
             allowNull: false
     },
     amount: {type: Sequelize.FLOAT,
-              allowNull: false,
-              unique: true}
+              allowNull: false
+              }
     })
 
 module.exports =Expense;

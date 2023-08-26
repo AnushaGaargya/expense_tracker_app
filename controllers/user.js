@@ -1,6 +1,11 @@
-const { where } = require('sequelize');
+require('dotenv').config();
 const User = require('../models/user');
+const Expense = require('../models/expense');
 const bcrypt = require('bcrypt')
+const jwt = require('jsonwebtoken')
+
+
+
 
 exports.getUserRegister = (req,res,next) => {
 // 
@@ -83,7 +88,15 @@ exports.postUserLogin = async (req,res,next) => {
             user_exists_flag = true
             const isMatch = await bcrypt.compare(password, existing_users[i].password )
             if(isMatch===true){
-                // res.send('welcome home')
+              
+                const username = existing_users[i].username
+                const user = {name: username}
+            
+                const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET)
+                console.log(accessToken)
+                res.cookie('accessToken', accessToken, {httpOnly:true})
+                // res.set('Authorization', `Bearer ${accessToken}`);
+                // res.json({accessToken: accessToken})
                 console.log("perfect, taking you home")
                 res.redirect('/home')
             }
@@ -103,6 +116,90 @@ exports.postUserLogin = async (req,res,next) => {
     
 }
 
-exports.getHome = (req,res,next) => {
-    res.render('home')
+
+
+exports.getHome = async (req,res,next) => {
+    
+    // const authHeader = req.headers['Authorization']
+    // console.log(authHeader)
+    // const token = authHeader && authHeader.split(' ')[1]
+    const token = req.cookies.accessToken;
+    console.log(`this is my token ${token}`)
+    if (token == null) return res.sendStatus(401)
+
+   //verifying if it's the correct token
+   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, async (err,user) => {
+    if(err){return res.sendStatus(403)} else{ 
+        console.log('we are at get home')
+        const username = user.name
+        const userId = await User.findAll({where: {username:username}})
+        console.log(`thisis the user ${username}`)
+        const userexpense = await Expense.findAll({
+            where: { userId: userId[0].id },
+          });
+          console.log(userexpense);
+          for (var i = 0; i<userexpense.length; i++){
+            console.log(userexpense[i].dataValues.category)
+            console.log(userexpense[i].dataValues.description)
+            console.log(userexpense[i].dataValues.amount)
+           console.log('---------------------') 
+          }
+        // req.user = user
+        // console.log(user.name)
+        // console.log(`testinggg ${req.user}`)
+        
+        res.render('home', {username: username, userexpense: userexpense});
+    }
+        req.user = user
+        console.log(user)
+    
+})}
+
+exports.postHome = async (req,res,next) => {
+    console.log("we are at post home")
+    const category = req.body.category
+    const description = req.body.description 
+    const amount = req.body.amount
+    const username = req.body.username
+    const userId = await User.findAll({where: {username:username}})
+    console.log(category)
+    console.log(description)
+    console.log(amount)
+    Expense.create({
+        category: category,
+        description: description,
+        amount: amount,
+        userId: userId[0].id
+    }).then(result => {
+        // req.flash('success', 'Registration Successful. Please Login to continue.');
+        res.redirect('/home')
+    }).catch(err => {console.log(err)})
+
+    res.redirect('home')
+
 }
+
+exports.getLogOut = (req,res,next) => {
+    res.clearCookie('accessToken');
+
+    // Redirect to a login page or any other appropriate page
+    res.redirect('/login');
+}
+
+// exports.authenticateToken= (req,res,next) => {
+//     //checking for the token
+//     console.log('authenticate middleware')
+//     const authHeader = req.headers['authorization']
+//     const token = authHeader && authHeader.split(' ')[1]
+//     console.log(`this is my token ${token}`)
+//     if (token == null) return res.sendStatus(401)
+
+//    //verifying if it's the correct token
+//    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err,user) => {
+//     if(err) return res.sendStatus(403)
+//     req.user = user
+//     next()
+//    })
+// }
+
+
